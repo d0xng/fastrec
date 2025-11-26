@@ -14,13 +14,74 @@ import argparse
 from pathlib import Path
 
 # =============================================================================
-# CONFIGURATION - UPDATE THIS PATH BEFORE RUNNING
+# CONFIGURATION - UPDATE BEFORE RUNNING
 # =============================================================================
 NUCLEI_TEMPLATES_PATH = "/path/nuclei-templates/http/exposures/"
+
+# TELEGRAM NOTIFICATIONS (optional - leave empty to disable)
+TELEGRAM_BOT_TOKEN = ""  # Get from @BotFather on Telegram
+TELEGRAM_CHAT_ID = ""    # Your chat ID or group ID
 # =============================================================================
 
 VERSION = "1.0.0"
 INSTALL_DIR = "/usr/local/bin"
+
+
+def count_lines(filepath):
+    """Count the number of lines in a file."""
+    try:
+        if os.path.exists(filepath) and os.path.getsize(filepath) > 0:
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                return sum(1 for _ in f)
+        return 0
+    except Exception:
+        return 0
+
+
+def send_telegram_notification(target_name, target_dir, results):
+    """
+    Send scan results to Telegram.
+    
+    Args:
+        target_name: Name of the target
+        target_dir: Path to results directory
+        results: Dict with file names and line counts
+    """
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return False
+    
+    try:
+        import urllib.request
+        import urllib.parse
+        
+        # Build message
+        message = f"🎯 *FastRec - Target: {target_name}*\n\n"
+        message += "📁 *Results:*\n"
+        
+        for filename, count in results.items():
+            if filename == "screenshots":
+                message += f"• screenshots: {count} images\n"
+            else:
+                message += f"• {filename}: {count} lines\n"
+        
+        message += "\n✅ Scan completed!"
+        
+        # Send to Telegram
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        data = urllib.parse.urlencode({
+            'chat_id': TELEGRAM_CHAT_ID,
+            'text': message,
+            'parse_mode': 'Markdown'
+        }).encode('utf-8')
+        
+        req = urllib.request.Request(url, data=data)
+        urllib.request.urlopen(req, timeout=10)
+        
+        return True
+        
+    except Exception as e:
+        print(f"[!] Telegram notification failed: {e}")
+        return False
 
 
 def print_banner():
@@ -744,7 +805,7 @@ def run_recon():
     print(f"\n[✓] All results saved in: {target_dir}")
     print("\n[*] Generated files:")
     
-    # List generated files
+    # List generated files with line counts
     expected_files = [
         "alive_subs.txt",
         "gau.txt",
@@ -756,21 +817,35 @@ def run_recon():
         "alive_js.txt"
     ]
     
+    results = {}
+    
     for filename in expected_files:
         filepath = os.path.join(target_dir, filename)
         if os.path.exists(filepath):
-            size = os.path.getsize(filepath)
-            print(f"    [✓] {filename} ({size} bytes)")
+            lines = count_lines(filepath)
+            results[filename] = lines
+            print(f"    [✓] {filename} ({lines} lines)")
         else:
+            results[filename] = 0
             print(f"    [✗] {filename} (not created)")
     
     # Check screenshots folder
     screenshots_dir = os.path.join(target_dir, "screenshots")
     if os.path.exists(screenshots_dir) and os.path.isdir(screenshots_dir):
         screenshot_count = len([f for f in os.listdir(screenshots_dir) if f.endswith('.png')])
+        results["screenshots"] = screenshot_count
         print(f"    [✓] screenshots/ ({screenshot_count} images)")
     else:
+        results["screenshots"] = 0
         print(f"    [✗] screenshots/ (not created)")
+    
+    # Send to Telegram (if configured)
+    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+        print("\n[*] Sending results to Telegram...")
+        if send_telegram_notification(target_name, target_dir, results):
+            print("[✓] Results sent to Telegram!")
+        else:
+            print("[!] Failed to send to Telegram.")
     
     print("\n" + "="*70)
     print(" Thank you for using fastrec!")
