@@ -258,6 +258,7 @@ def uninstall_tools():
 def check_dependencies():
     """
     Check if all required tools are installed.
+    Only shows output if something is missing.
     Returns True if all dependencies are met, False otherwise.
     """
     dependencies = [
@@ -276,39 +277,31 @@ def check_dependencies():
     missing = []
     warnings = []
     
-    print("\n[*] Checking dependencies...")
-    
+    # Check core dependencies silently
     for tool in dependencies:
         if shutil.which(tool) is None:
             missing.append(tool)
-            print(f"    [✗] {tool} - NOT FOUND")
-        else:
-            print(f"    [✓] {tool} - OK")
     
     # Check for subshot
     subshot_path = check_subshot_available()
     if subshot_path:
-        print(f"    [✓] subshot - OK")
         # Check for playwright
-        if check_playwright_installed():
-            print(f"    [✓] playwright - OK")
-        else:
+        if not check_playwright_installed():
             warnings.append("playwright")
-            print(f"    [!] playwright - NOT INSTALLED (screenshots will be skipped)")
     else:
         warnings.append("subshot")
-        print(f"    [!] subshot - NOT FOUND (screenshots will be skipped)")
     
+    # Only show output if there are problems
     if missing:
-        print(f"\n[!] ERROR: Missing dependencies: {', '.join(missing)}")
-        print("[!] Please install the missing tools before running this script.")
+        print("\n[!] Missing dependencies:")
+        for tool in missing:
+            print(f"    [✗] {tool}")
+        print("\n[!] Please install the missing tools before running this script.")
         return False
     
     if warnings:
-        print(f"\n[!] Warnings: {', '.join(warnings)} not available.")
-        print("[!] Screenshot step will be skipped.")
+        print(f"\n[!] Optional: {', '.join(warnings)} not available - screenshots will be skipped.")
     
-    print("\n[✓] Core dependencies are installed.\n")
     return True
 
 
