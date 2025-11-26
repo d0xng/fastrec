@@ -407,6 +407,62 @@ def run_piped_command(command, cwd=None):
         return False
 
 
+def run_parallel_commands(cmd1, cmd2, label1, label2, cwd=None):
+    """
+    Run two commands in parallel and wait for both to complete.
+    Shows real-time output from both commands.
+    
+    Args:
+        cmd1: First command string
+        cmd2: Second command string
+        label1: Label for first command
+        label2: Label for second command
+        cwd: Working directory for both commands
+    """
+    import threading
+    import time
+    
+    print(f"\n[>] Starting {label1} and {label2} in parallel...\n")
+    
+    results = {'cmd1_done': False, 'cmd2_done': False}
+    
+    def run_cmd(cmd, label, result_key):
+        try:
+            process = subprocess.Popen(
+                cmd,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                cwd=cwd
+            )
+            
+            for line in process.stdout:
+                print(f"[{label}] {line}", end='')
+            
+            process.wait()
+            results[result_key] = True
+            print(f"\n[✓] {label} completed.")
+            
+        except Exception as e:
+            print(f"\n[!] {label} error: {e}")
+            results[result_key] = True
+    
+    # Start both threads
+    thread1 = threading.Thread(target=run_cmd, args=(cmd1, label1, 'cmd1_done'))
+    thread2 = threading.Thread(target=run_cmd, args=(cmd2, label2, 'cmd2_done'))
+    
+    thread1.start()
+    thread2.start()
+    
+    # Wait for both to complete
+    thread1.join()
+    thread2.join()
+    
+    print(f"\n[✓] Both {label1} and {label2} finished.\n")
+
+
 def run_subshot(target_dir):
     """
     Run subshot to take screenshots of alive subdomains.
@@ -612,18 +668,18 @@ def run_recon():
     run_subshot(target_dir)
     
     # =========================================================================
-    # STEP 3: GAU and Katana
+    # STEP 3: GAU and Katana (parallel)
     # =========================================================================
-    print("\n\n[STEP 3/7] Running GAU and Katana")
+    print("\n\n[STEP 3/7] Running GAU and Katana (parallel)")
     print("-"*70)
     
-    # Run GAU
-    cmd_gau = "cat alive_subs.txt | gau --threads 5 >> gau.txt"
-    run_piped_command(cmd_gau, cwd=target_dir)
-    
-    # Run Katana
-    cmd_katana = "cat alive_subs.txt | katana -d 5 -silent >> katana.txt"
-    run_piped_command(cmd_katana, cwd=target_dir)
+    run_parallel_commands(
+        cmd1="cat alive_subs.txt | gau --threads 5 >> gau.txt",
+        cmd2="cat alive_subs.txt | katana -d 5 -silent >> katana.txt",
+        label1="GAU",
+        label2="Katana",
+        cwd=target_dir
+    )
     
     # =========================================================================
     # STEP 4: Combine URLs
