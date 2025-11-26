@@ -26,18 +26,15 @@ INSTALL_DIR = "/usr/local/bin"
 def print_banner():
     """Display the tool banner."""
     banner = """
-    ╔═══════════════════════════════════════════════════════════════╗
-    ║                                                               ║
-    ║   ███████╗ █████╗ ███████╗████████╗██████╗ ███████╗ ██████╗   ║
-    ║   ██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔════╝   ║
-    ║   █████╗  ███████║███████╗   ██║   ██████╔╝█████╗  ██║        ║
-    ║   ██╔══╝  ██╔══██║╚════██║   ██║   ██╔══██╗██╔══╝  ██║        ║
-    ║   ██║     ██║  ██║███████║   ██║   ██║  ██║███████╗╚██████╗   ║
-    ║   ╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝ ╚═════╝   ║
-    ║                                                               ║
-    ║            Fast Reconnaissance Automation Tool                ║
-    ║                            v{version}                            ║
-    ╚═══════════════════════════════════════════════════════════════╝
+        ███████╗ █████╗ ███████╗████████╗██████╗ ███████╗ ██████╗
+        ██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔════╝
+        █████╗  ███████║███████╗   ██║   ██████╔╝█████╗  ██║     
+        ██╔══╝  ██╔══██║╚════██║   ██║   ██╔══██╗██╔══╝  ██║     
+        ██║     ██║  ██║███████║   ██║   ██║  ██║███████╗╚██████╗
+        ╚═╝     ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝ ╚═════╝
+                                                                    
+             Fast Reconnaissance Automation Tool v{version}
+                                                         created by d0x
     """.format(version=VERSION)
     print(banner)
 
@@ -45,19 +42,15 @@ def print_banner():
 def print_warning():
     """Display warning about nuclei-templates path."""
     warning = """
-    ╔═══════════════════════════════════════════════════════════════╗
-    ║                         ⚠ WARNING ⚠                          ║
-    ╠═══════════════════════════════════════════════════════════════╣
-    ║                                                               ║
-    ║   You MUST update the NUCLEI_TEMPLATES_PATH variable at the   ║
-    ║   top of this script before running nuclei scans.             ║
-    ║                                                               ║
-    ║   Current path: {path:<43} ║
-    ║                                                               ║
-    ║   Replace '/path' with your actual nuclei-templates location. ║
-    ║                                                               ║
-    ╚═══════════════════════════════════════════════════════════════╝
-    """.format(path=NUCLEI_TEMPLATES_PATH[:43])
+                              ⚠ WARNING ⚠
+
+        You MUST update the NUCLEI_TEMPLATES_PATH variable at the
+        top of this script before running nuclei scans.
+
+        Current path: {path}
+
+        Replace '/path' with your actual nuclei-templates location.
+    """.format(path=NUCLEI_TEMPLATES_PATH)
     print(warning)
 
 
