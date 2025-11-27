@@ -721,12 +721,16 @@ def run_recon():
         print("\n[!] Warning: No alive subdomains found. Continuing anyway...")
     
     # =========================================================================
-    # STEP 2: Screenshots with SubShot
+    # STEP 2: Screenshots with SubShot (optional)
     # =========================================================================
     print("\n\n[STEP 2/7] Taking screenshots with SubShot")
     print("-"*70)
     
-    run_subshot(target_dir)
+    screenshot_choice = input("\n[?] Take screenshots? (y = yes, s = skip): ").strip().lower()
+    if screenshot_choice == 'y':
+        run_subshot(target_dir)
+    else:
+        print("[*] Skipping screenshots, continuing...")
     
     # =========================================================================
     # STEP 3: GAU and Katana (parallel)
